@@ -4,8 +4,14 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail,Message
 from werkzeug.utils import secure_filename
 import os
+import logging
+import sys
+
+
 
 app = Flask(__name__)
+app.logger.addHandler(logging.StreamHandler(sys.stdout))
+app.logger.setLevel(logging.ERROR)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///p_count.db'
 db = SQLAlchemy(app)
 mail = Mail(app) # instantiate the mail class
