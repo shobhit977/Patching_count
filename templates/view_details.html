@@ -31,7 +31,7 @@
                     Download Report
                 </button>
             </div>
-            <div id="report">
+            <div id="report" >
             <div><strong>Patching Details for the month of <span style="color:green;">{{month}}, {{year}}</span> has
                     been displayed:</strong></div>
             <br>
@@ -83,7 +83,9 @@
                     </tbody>
                 </table>
                 <br>
+                <div class="table-responsive">
                 <canvas id='barChart' width="1300" height="400" style="display: none;"></canvas>
+            </div>
             </div>
             <div class="d-grid gap-2 col-4 mx-auto">
                 <button class="btn btn-outline-primary btn-lg" id="charts" type="submit" onclick="myFunction()">Show
@@ -147,6 +149,8 @@
                 ]
                 },
                 options: {
+                    responsive: false,
+                 maintainAspectRatio: false,
 
                     scales: {
                         xAxes: [{
