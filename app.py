@@ -47,16 +47,31 @@ class User(db.Model):
         return f"{self.sno}-{self.dba}-{self.cluster_assigned_12c}-{self.cluster_completed_12c}-{self.restart_assigned_12c}-{self.restart_completed_12c}-{self.total_assigned}-{self.total_completed}"
 
 def snd_mail():
-    file=request.files['finput']
-    if file:
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
-    print(request.form.get('subject'))
-    msg = Message(subject = request.form.get('subject'), body = request.form.get('body'), sender = "anonymousanwitashobhit@outlook.com", recipients = [request.form.get('email')])  
+    comm_email=['gmail.com','outlook.com','yahoo.com','hotmail.com','rediff.com']
+    eid=str(request.form.get('email'))
+    edomain=eid.split('@')
+    try:
+        if edomain[1] not in comm_email:
+            
+            raise "email"
+        print(edomain[1])
+        file=request.files['finput']
+        if file:
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'],filename))
+        print(request.form.get('subject'))
+        msg = Message(subject = request.form.get('subject'), body = request.form.get('body'), sender = "anonymousanwitashobhit@outlook.com", recipients = [request.form.get('email')])  
 
-    with app.open_resource('Uploader/'+filename) as fp:  
-        msg.attach(filename,"application/vnd.ms-excel",fp.read())  
-    mail.send(msg)
+        with app.open_resource('Uploader/'+filename) as fp:  
+            msg.attach(filename,"application/vnd.ms-excel",fp.read())  
+        mail.send(msg)
+        return "index"
+    except:
+        return "email"
+    
+    
+    
+
 
 def upload_file():
         try:
@@ -105,14 +120,17 @@ def index():
     msg=""
     if request.method == 'POST':
         if 'sm' in request.form: 
-            snd_mail()
+            val=snd_mail()
+            if val=="email":
+                val="send_mail"
+                msg="Message cannot be delivered to this domain!"
         if 'up' in request.form:
             val=upload_file()
             if(val=="upload"):
                 msg="Sorry the file for this month already exists!"
             if(val=="error"):
                 val="upload"
-                msg="Incorrect type of file uploaded. Please check and upload"
+                msg="Incorrect type of file uploaded. Please check and upload!"
         
        
 

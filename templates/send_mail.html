@@ -3,6 +3,11 @@
 {% block body %}
 
     <!-- Tab panes -->
+    {% if msg %}
+    <div class="alert alert-danger" role="alert" style="text-align: center;">
+        <strong>{{msg}}</strong>
+      </div>    
+    {% endif %}
     <div class="tab-content">
         <div id="mail" class="container tab-pane active"><br>
             <form  action="/" method="POST" enctype="multipart/form-data">
