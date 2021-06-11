@@ -4,16 +4,11 @@
 <div class="tab-content">
     <div id="mail" class="container tab-pane active"><br>
         <form action="/set_reminder" method="POST">
-            {% with messages = get_flashed_messages() %}
-            {% if messages %}
-            <ul class=flashes>
-                {% for message in messages %}
-                <div  class="alert alert-success" role="alert" style="text-align: center;">{{ message }}</div>
-
-                {% endfor %}
-            </ul>
+            {% if msg %}
+            <div  class="alert alert-success" role="alert" style="text-align: center;">{{ msg }}</div>
             {% endif %}
-            {% endwith %}
+            
+
             <div class="mb-3">
                 <label for="exampleInputEmail1" class="form-label">Title</label>
                 <input required type="text" class="form-control" id="title" name='title' aria-describedby="emailHelp">

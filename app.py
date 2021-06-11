@@ -12,7 +12,8 @@ import logging
 import sys
 from datetime import datetime,timedelta,date
 import pyrebase
-import schedule,time
+from flask_apscheduler import APScheduler
+
 
 config={
     "apiKey": "AIzaSyDVlVnZHhNYlMD5ZXRf4mZQDpj9wWypcpI",
@@ -36,6 +37,11 @@ db = SQLAlchemy(app)
 mail = Mail(app) # instantiate the mail class
 UPLOAD_FOLDER = './Uploader'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER 
+scheduler = APScheduler()
+# if you don't wanna use a config, you can set options here:
+scheduler.api_enabled = True
+scheduler.init_app(app)
+scheduler.start()
 
 
 # configuration of mail
@@ -336,57 +342,25 @@ def set_reminder():
             desc=request.form.get('desc')
             time_1=request.form.get('time')
             date_1=request.form.get('date')
-            msg="Reminder set successfully!"
-            global c
-            c=c+1
-            d={}
-            def action():
-                job_list[0]['ctr']=job_list[0]['ctr']+1
-                for i in job_list:
-                    if datetime.now().replace(second=0,microsecond=0)==i['end_time']:
-                        mail_reminder(title,desc)
-                        schedule.cancel_job(i['job'])
-                        job_list.remove(i)
-                    else:
-                        pass
-           
-            
-            d['ctr']=1
-            d['start_time']=datetime.now().replace(microsecond=0)
             d_list=date_1.split("-")
-            mon=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-            date_str=str(mon[int(d_list[1])-1])+" "+str(d_list[2])+" "+str(d_list[0])
-            datetime_object = datetime.strptime(date_str+" "+str(time_1), '%b %d %Y %H:%M')
-            print(datetime_object)
-            week_days=["monday","tuesday","wednesday","thursday","friday","saturday","sunday"]
-            # week_num=datetime.date(datetime.strptime(str(d_list[0]),'%Y'),datetime.strptime(str(mon[int(d_list[1])-1]),'%b'),datetime.strptime(str(d_list[2]), '%d')).weekday()
-            week_num=date(int(d_list[0]),int(d_list[1]),int(d_list[2])).weekday()
-            print(d_list[1])
-            d['end_time']=datetime_object
-            print(time_1)
-            job_list.append(d)
-            if week_days[week_num]=='monday':
-                d['job']=schedule.every().monday.at(str(time_1)).do(action)
-            if week_days[week_num]=='tuesday':
-                d['job']=schedule.every().tuesday.at(str(time_1)).do(action)
-            if week_days[week_num]=='wednesday':
-                d['job']=schedule.every().wednesday.at(str(time_1)).do(action)
-            if week_days[week_num]=='thursday':
-                d['job']=schedule.every().thursday.at(str(time_1)).do(action)
-            if week_days[week_num]=='friday':
-                d['job']=schedule.every().friday.at(str(time_1)).do(action)
-            if week_days[week_num]=='saturday':
-                d['job']=schedule.every().saturday.at(str(time_1)).do(action)
-            if week_days[week_num]=='sunday':
-                d['job']=schedule.every().sunday.at(str(time_1)).do(action)
-            # print(d['end_time']-d['start_time'])
-            # print(time_1)
-            # print(date_1)
-            while True:
-                schedule.run_pending()
-                time.sleep(1)
-                flash("Reminder Set Successfully!")
-                # return redirect(url_for('index'))
+            t_list=time_1.split(':')
+            eid=session['email']
+            @scheduler.task('cron',day=d_list[2],month=d_list[1],year=d_list[0],hour=t_list[0],minute=t_list[1])
+            def job1():
+                with app.test_request_context():
+                    comm_email=['gmail.com','outlook.com','yahoo.com','hotmail.com','rediff.com']
+                    
+                    edomain=eid.split('@')
+                    try:
+                        if edomain[1] not in comm_email:
+                            
+                            raise "email"
+                        msg = Message(subject = title, body = desc, sender = "anonymousanwitashobhit@outlook.com", recipients = [eid])  
+                        mail.send(msg)
+            
+                    except:
+                        pass
+            msg="Reminder Set Successfully!"    
         return render_template('set_reminder.html',msg=msg)
     except KeyError:
         flash('Please Login before proceeding')
