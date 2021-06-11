@@ -1,2 +1,2 @@
 web: gunicorn app:app
-clock: python app.py
+clock: python app.py --loglevel=INFO
