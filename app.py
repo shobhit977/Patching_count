@@ -13,7 +13,7 @@ import sys
 from datetime import datetime,timedelta,date
 import pyrebase
 from flask_apscheduler import APScheduler
-
+# from apscheduler.schedulers.blocking import BlockingScheduler
 
 config={
     "apiKey": "AIzaSyDVlVnZHhNYlMD5ZXRf4mZQDpj9wWypcpI",
@@ -25,7 +25,7 @@ config={
     "appId": "1:51521810156:web:9e9954f2b7c5c768aaffc9",
     "measurementId": "G-PN455M9936"
 }
-
+logging.basicConfig(level=logging.DEBUG)
 firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
 app = Flask(__name__)
@@ -33,10 +33,12 @@ app.secret_key="fdsfsdafsdfdsfn,dsfmnas,thisshouldbethewierdestsecretkeypossible
 app.logger.addHandler(logging.StreamHandler(sys.stdout))
 app.logger.setLevel(logging.ERROR)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///p_count.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS']=False
 db = SQLAlchemy(app)
 mail = Mail(app) # instantiate the mail class
 UPLOAD_FOLDER = './Uploader'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER 
+
 scheduler = APScheduler()
 # if you don't wanna use a config, you can set options here:
 scheduler.api_enabled = True
@@ -331,40 +333,34 @@ def mail_reminder(title,desc):
     
 c=0
 job_list=[]
+t_list=[]
+d_list=[]
+rem_title=""
+rem_desc=""
+rem_eid=""
 @app.route('/set_reminder',methods=['GET','POST'])
 def set_reminder():
     try:
         x=session['user_id']
         msg=""
-        global job_list
+        global job_list,rem_title,rem_desc,rem_eid,d_list,t_list
         if request.method == 'POST':
-            title=request.form.get('title')
-            desc=request.form.get('desc')
+            rem_title=request.form.get('title')
+            rem_desc=request.form.get('desc')
             time_1=request.form.get('time')
             date_1=request.form.get('date')
             d_list=date_1.split("-")
             t_list=time_1.split(':')
-            eid=session['email']
-            @scheduler.task('cron',day=d_list[2],month=d_list[1],year=d_list[0],hour=t_list[0],minute=t_list[1])
-            def job1():
-                with app.test_request_context():
-                    comm_email=['gmail.com','outlook.com','yahoo.com','hotmail.com','rediff.com']
-                    
-                    edomain=eid.split('@')
-                    try:
-                        if edomain[1] not in comm_email:
-                            
-                            raise "email"
-                        msg = Message(subject = title, body = desc, sender = "anonymousanwitashobhit@outlook.com", recipients = [eid])  
-                        mail.send(msg)
+            rem_eid=session['email']
             
-                    except:
-                        pass
             msg="Reminder Set Successfully!"    
         return render_template('set_reminder.html',msg=msg)
     except KeyError:
         flash('Please Login before proceeding')
         return redirect(url_for('login'))
+
+# @sched.scheduled_job('cron',day=d_list[2],month=d_list[1],year=d_list[0],hour=t_list[0],minute=t_list[1])
+
 
 
 @app.route('/view_reminder',methods=['GET','POST'])
