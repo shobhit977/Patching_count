@@ -103,7 +103,8 @@ def snd_mail():
             msg.attach(filename,"application/vnd.ms-excel",fp.read())  
         mail.send(msg)
         return configuration.HtmlConfig.index_html
-    except:
+    except Exception as e:
+        print(e)
         return "email"
     
     
